@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>灵感雷达 · 珀莱雅美妆科研实验室 AI 发现层</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  @media (prefers-reduced-motion: reduce) { * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
+  * { box-sizing: border-box; }
+  :root {
+    --bg: #F2F4EE; --paper: #FBFCF9; --ink: #16231D; --ink-soft: #59685D;
+    --signal: #2F7A63; --signal-soft: #E1EEE7; --line: #DCE2D5;
+    --radius: 16px; --font: 'IBM Plex Sans', sans-serif; --mono: 'IBM Plex Mono', monospace;
+  }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); font-family: var(--font); -webkit-font-smoothing: antialiased; }
+  .page { max-width: 760px; margin: 0 auto; padding: 64px 24px 80px; }
+
+  .eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; color: var(--signal); text-transform: uppercase; margin-bottom: 14px; }
+  h1 { font-weight: 700; font-size: clamp(40px, 8vw, 60px); letter-spacing: -0.025em; margin: 0 0 12px; line-height: 1.0; }
+  .tagline { font-size: 17px; line-height: 1.65; color: var(--ink-soft); max-width: 48ch; margin: 0 0 48px; }
+
+  .nav-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 40px; }
+  .nav-card {
+    background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 28px 24px; text-decoration: none; color: var(--ink);
+    transition: border-color 0.15s, transform 0.15s;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .nav-card:hover { border-color: var(--signal); transform: translateY(-2px); }
+  .nav-card:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+  .nav-card-tag { font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--signal); }
+  .nav-card-title { font-weight: 700; font-size: 18px; margin: 0; }
+  .nav-card-desc { font-size: 13px; color: var(--ink-soft); line-height: 1.55; margin: 0; }
+  .nav-card-arrow { font-size: 20px; margin-top: 8px; color: var(--signal); align-self: flex-end; }
+
+  .nav-card.featured { grid-column: 1 / -1; background: var(--signal-soft); border-color: var(--signal); }
+  .nav-card.test-card { border-style: dashed; }
+
+  .meta-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 32px; }
+  .meta-badge { font-family: var(--mono); font-size: 11px; padding: 4px 12px; border-radius: 999px; background: var(--paper); border: 1px solid var(--line); color: var(--ink-soft); }
+
+  .divider { border: none; border-top: 1px solid var(--line); margin: 36px 0; }
+  .footer-note { font-family: var(--mono); font-size: 12px; color: var(--ink-soft); line-height: 1.8; }
+  .footer-note a { color: var(--signal); text-decoration: none; }
+  .footer-note a:hover { text-decoration: underline; }
+
+  @media (max-width: 540px) {
+    .nav-grid { grid-template-columns: 1fr; }
+    .nav-card.featured { grid-column: auto; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <div class="eyebrow">珀莱雅美妆科研实验室 · AI 发现层</div>
+    <h1>灵感雷达</h1>
+    <p class="tagline">把直觉变成证据，把证据变成配方。<br>在智能配方师生成方案之前，先回答一个更根本的问题。</p>
+
+    <div class="meta-row">
+      <span class="meta-badge">四模块架构</span>
+      <span class="meta-badge">弱信号识别 → 需求预测 → 假设生成 → 验证学习</span>
+      <span class="meta-badge">Claude API 驱动</span>
+    </div>
+  </header>
+
+  <nav class="nav-grid" aria-label="项目页面导航">
+    <a href="overview.html" class="nav-card featured">
+      <span class="nav-card-tag">架构文档</span>
+      <p class="nav-card-title">方案总览</p>
+      <p class="nav-card-desc">四模块架构的完整说明，灵感雷达如何嵌入珀莱雅现有研发链路，以及与智能配方师的衔接逻辑。</p>
+      <span class="nav-card-arrow">→</span>
+    </a>
+    <a href="demo.html" class="nav-card">
+      <span class="nav-card-tag">互动 Demo</span>
+      <p class="nav-card-title">实时体验</p>
+      <p class="nav-card-desc">输入任意一条原始信号，查看灵感雷达如何逐层分析，生成可验证科研假设。</p>
+      <span class="nav-card-arrow">→</span>
+    </a>
+    <a href="tests.html" class="nav-card test-card">
+      <span class="nav-card-tag">测试套件</span>
+      <p class="nav-card-title">5 条预置测试用例</p>
+      <p class="nav-card-desc">覆盖小红书用户帖、学术文献、专利摘要、客服反馈、海外社区五类信号源，可批量运行对比结果。</p>
+      <span class="nav-card-arrow">→</span>
+    </a>
+  </nav>
+
+  <hr class="divider">
+  <p class="footer-note">
+    2026 AI 先锋未来人才大赛 · 珀莱雅命题方案<br>
+    仓库：<a href="https://github.com/yourusername/linggan-radar" target="_blank">github.com/yourusername/linggan-radar</a>
+  </p>
+</div>
+</body>
+</html>

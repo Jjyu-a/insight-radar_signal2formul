@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>灵感雷达 · 测试套件 · 5 条预置用例</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  @media (prefers-reduced-motion: reduce) { * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
+  * { box-sizing: border-box; }
+  :root {
+    --bg: #F2F4EE; --paper: #FBFCF9; --ink: #16231D; --ink-soft: #59685D;
+    --signal: #2F7A63; --signal-soft: #E1EEE7; --risk: #B5652E; --risk-soft: #F6E7D9;
+    --line: #DCE2D5; --radius: 14px;
+    --font: 'IBM Plex Sans', sans-serif; --mono: 'IBM Plex Mono', monospace;
+  }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); font-family: var(--font); -webkit-font-smoothing: antialiased; }
+  .page { max-width: 860px; margin: 0 auto; padding: 40px 24px 80px; }
+  .back-link { font-family: var(--mono); font-size: 12px; color: var(--signal); text-decoration: none; display: inline-block; margin-bottom: 28px; }
+  .back-link:hover { text-decoration: underline; }
+  .eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; color: var(--signal); text-transform: uppercase; margin-bottom: 14px; }
+  h1 { font-weight: 700; font-size: clamp(28px, 5vw, 40px); letter-spacing: -0.02em; margin: 0 0 10px; }
+  .desc { font-size: 14px; line-height: 1.65; color: var(--ink-soft); max-width: 58ch; margin: 0 0 28px; }
+
+  .ctrl-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; flex-wrap: wrap; }
+  .btn {
+    font-family: var(--font); font-weight: 600; font-size: 13px; padding: 9px 22px;
+    border-radius: 999px; border: none; cursor: pointer; transition: all 0.15s;
+  }
+  .btn-primary { background: var(--ink); color: var(--paper); }
+  .btn-primary:hover:not(:disabled) { background: var(--signal); }
+  .btn-secondary { background: var(--paper); color: var(--ink); border: 1px solid var(--line); }
+  .btn-secondary:hover:not(:disabled) { border-color: var(--signal); color: var(--signal); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .progress-text { font-family: var(--mono); font-size: 12px; color: var(--ink-soft); }
+
+  .test-grid { display: flex; flex-direction: column; gap: 20px; }
+  .test-card { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+  .test-card.running { border-color: var(--signal); }
+  .test-card.done { border-color: var(--signal); }
+  .test-card.error { border-color: var(--risk); }
+
+  .test-header { display: flex; align-items: center; gap: 14px; padding: 16px 20px; cursor: pointer; user-select: none; }
+  .test-header:hover { background: var(--bg); }
+  .test-num { font-family: var(--mono); font-size: 11px; padding: 3px 10px; border-radius: 999px; background: var(--bg); border: 1px solid var(--line); color: var(--ink-soft); flex-shrink: 0; }
+  .test-card.running .test-num { background: var(--signal-soft); border-color: var(--signal); color: var(--signal); }
+  .test-card.done .test-num { background: var(--signal); border-color: var(--signal); color: #fff; }
+  .test-card.error .test-num { background: var(--risk-soft); border-color: var(--risk); color: var(--risk); }
+
+  .test-title-block { flex: 1; }
+  .test-name { font-weight: 600; font-size: 14px; margin-bottom: 2px; }
+  .test-type-badge { font-family: var(--mono); font-size: 11px; color: var(--ink-soft); }
+  .test-status { font-family: var(--mono); font-size: 11px; color: var(--ink-soft); flex-shrink: 0; }
+  .test-status.running { color: var(--signal); }
+  .test-status.done { color: var(--signal); }
+  .test-status.error { color: var(--risk); }
+  .chevron { font-size: 12px; color: var(--ink-soft); transition: transform 0.2s; flex-shrink: 0; }
+  .test-card.expanded .chevron { transform: rotate(180deg); }
+
+  .test-body { display: none; padding: 0 20px 20px; }
+  .test-card.expanded .test-body { display: block; }
+
+  .signal-preview { font-size: 12px; line-height: 1.7; color: var(--ink-soft); background: var(--bg); border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; }
+  .run-single-btn { font-family: var(--font); font-size: 12px; font-weight: 600; padding: 6px 16px; border-radius: 999px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); cursor: pointer; transition: all 0.15s; }
+  .run-single-btn:hover:not(:disabled) { border-color: var(--signal); color: var(--signal); }
+  .run-single-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .result-block { margin-top: 16px; }
+  .result-section { margin-bottom: 14px; }
+  .result-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 6px; }
+
+  .kw-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .kw-tag { font-size: 12px; padding: 3px 10px; border-radius: 999px; background: var(--bg); border: 1px solid var(--line); }
+  .kw-tag.signal { background: var(--signal-soft); border-color: var(--signal); color: var(--signal); }
+
+  .score-line { display: flex; align-items: center; gap: 12px; }
+  .score-num { font-family: var(--mono); font-size: 22px; font-weight: 600; color: var(--signal); }
+  .score-label-text { font-size: 13px; color: var(--ink-soft); }
+  .bar-track { height: 5px; background: var(--bg); border-radius: 999px; overflow: hidden; margin-top: 4px; }
+  .bar-fill { height: 100%; background: var(--signal); border-radius: 999px; width: 0%; transition: width 0.8s ease; }
+
+  .hypo-box { border-left: 3px solid var(--signal); padding-left: 14px; }
+  .hypo-title { font-size: 14px; font-weight: 700; margin: 0 0 6px; }
+  .hypo-body { font-size: 13px; color: var(--ink); line-height: 1.6; margin: 0 0 6px; }
+  .hypo-pred { font-size: 12px; color: var(--ink-soft); font-style: italic; margin: 0; }
+
+  .steps-list { margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.8; color: var(--ink); }
+  .reinject-note { font-size: 12px; color: var(--signal); padding: 7px 12px; background: var(--signal-soft); border-radius: 7px; margin-top: 8px; }
+
+  .error-msg { font-size: 13px; color: var(--risk); background: var(--risk-soft); border-radius: 8px; padding: 10px 14px; margin-top: 12px; }
+
+  .divider { border: none; border-top: 1px solid var(--line); margin: 28px 0; }
+  .note { font-size: 12px; color: var(--ink-soft); line-height: 1.7; }
+
+  @media (max-width: 600px) { .page { padding: 28px 16px 56px; } .ctrl-bar { gap: 8px; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <a href="index.html" class="back-link">← 返回首页</a>
+  <div class="eyebrow">灵感雷达 · 测试套件</div>
+  <h1>5 条预置测试用例</h1>
+  <p class="desc">覆盖小红书用户帖、学术文献、专利摘要、客服反馈、海外社区五类信号源。可单条运行，也可一键批量运行对比结果。</p>
+
+  <div class="ctrl-bar">
+    <button class="btn btn-primary" id="run-all-btn" type="button">▶ 批量运行全部（5条）</button>
+    <button class="btn btn-secondary" id="reset-btn" type="button">↺ 重置</button>
+    <span class="progress-text" id="progress-text"></span>
+  </div>
+
+  <div class="test-grid" id="test-grid"></div>
+
+  <hr class="divider">
+  <p class="note">每条测试用例调用 2 次 Claude API。批量运行时顺序执行，避免并发限流。<br>如需自定义输入，请前往 <a href="demo.html" style="color:var(--signal);text-decoration:none;">互动 Demo →</a></p>
+</div>
+
+<script>
+(function () {
+  var TESTS = [
+    {
+      id: 'T01',
+      name: '壬二酸 + 玻色因搭配诉求',
+      type: '小红书用户帖',
+      signal: '用了三个月的壬二酸精华，痘印淡了但是皮肤开始有点干，感觉壬二酸是不是需要和什么东西搭配才行？最近看到有博主说玻色因可以一起用，不知道靠不靠谱……'
+    },
+    {
+      id: 'T02',
+      name: '皮肤微生物组与益生元后生元',
+      type: '学术文献摘要',
+      signal: 'Recent studies suggest that the skin microbiome plays a critical role in regulating sebum production and barrier function. Dysbiosis of Cutibacterium acnes strains has been correlated with increased inflammatory cytokine release (IL-1β, TNF-α), suggesting a potential therapeutic window for probiotic-derived postbiotics targeting the skin-gut-brain axis.'
+    },
+    {
+      id: 'T03',
+      name: 'β-葡聚糖 + 神经酰胺前体 TLR2 通路',
+      type: '专利摘要',
+      signal: '本发明公开了一种含有β-葡聚糖与神经酰胺前体的复合修护组合物，通过激活皮肤Toll样受体2（TLR2）信号通路，促进角质层脂质合成，显著改善敏感性皮肤屏障损伤。'
+    },
+    {
+      id: 'T04',
+      name: '夏季精华灼热感集中反馈',
+      type: '客服反馈',
+      signal: '顾客反映：最近入夏后用了某款精华感觉脸上有灼热感，不是过敏，就是热，问是不是成分浓度太高了，问有没有适合夏天用的版本？这类反馈本月已收到37条，集中在华南、华东地区。'
+    },
+    {
+      id: 'T05',
+      name: 'Bakuchiol 作为温和视黄醇替代物',
+      type: '海外社区',
+      signal: 'Reddit r/SkincareAddiction: multiple users reporting success with bakuchiol layered under ceramide-based moisturizers for sensitive skin. Many say they tolerate it better than retinol. Trend increasing in EU/AU markets. Several derms on TikTok also pushing bakuchiol as "retinol alternative without the peeling."'
+    }
+  ];
+
+  var runAllBtn = document.getElementById('run-all-btn');
+  var resetBtn = document.getElementById('reset-btn');
+  var progressText = document.getElementById('progress-text');
+  var grid = document.getElementById('test-grid');
+  var cards = [];
+  var running = false;
+
+  function buildPrompt1(input) {
+    return '你是珀莱雅美妆科研实验室的 AI 分析助手。以下是一条来自市场的原始信号：\n\n' + input + '\n\n请以 JSON 格式输出：\n{\n  "source_type": "信号来源类型",\n  "core_concern": "核心护肤诉求（一句话）",\n  "keywords": ["关键词1","关键词2","关键词3"],\n  "signal_strength": "强/中/弱",\n  "signal_note": "一句话补充说明"\n}\n只输出 JSON，不要其他文字。';
+  }
+
+  function buildPrompt2(input) {
+    return '你是珀莱雅美妆科研实验室的 AI 分析助手。以下是一条原始信号：\n\n' + input + '\n\n请完成四步分析，以 JSON 输出：\n{\n  "demand_direction": "预测的主要需求方向",\n  "growth_score": 75,\n  "growth_horizon": "预计在 X-X 年内增长",\n  "hypothesis": {\n    "title": "科研假设标题",\n    "mechanism": "皮肤学机理说明",\n    "testable_prediction": "可验证预测",\n    "evidence_basis": "信号支撑"\n  },\n  "validation_plan": {\n    "feasibility_score": 70,\n    "patent_risk": "低/中/高",\n    "next_steps": ["步骤1","步骤2","步骤3"],\n    "reinject": "如何优化后续信号采集"\n  }\n}\n只输出 JSON，不要其他文字。';
+  }
+
+  function callClaude(prompt) {
+    return fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 1000, messages: [{ role: 'user', content: prompt }] })
+    }).then(function (r) {
+      if (!r.ok) throw new Error('API 错误 ' + r.status);
+      return r.json();
+    }).then(function (d) {
+      var text = (d.content || []).map(function (b) { return b.text || ''; }).join('');
+      var clean = text.replace(/```json/g, '').replace(/```/g, '').trim();
+      try { return JSON.parse(clean); } catch (e) {
+        var m = clean.match(/\{[\s\S]*\}/);
+        if (m) return JSON.parse(m[0]);
+        throw new Error('JSON 解析失败');
+      }
+    });
+  }
+
+  function renderResult(cardEl, r1, r2) {
+    var rb = cardEl.querySelector('.result-block');
+    rb.innerHTML = '';
+
+    // 弱信号
+    var s1 = document.createElement('div');
+    s1.className = 'result-section';
+    s1.innerHTML = '<div class="result-label">① 弱信号识别</div>';
+    var concern = document.createElement('p');
+    concern.style.cssText = 'font-size:14px;font-weight:600;margin:0 0 6px;';
+    concern.textContent = r1.core_concern || '—';
+    s1.appendChild(concern);
+    if (r1.keywords && r1.keywords.length) {
+      var kwRow = document.createElement('div');
+      kwRow.className = 'kw-row';
+      r1.keywords.forEach(function (kw) {
+        var t = document.createElement('span');
+        t.className = 'kw-tag signal';
+        t.textContent = kw;
+        kwRow.appendChild(t);
+      });
+      s1.appendChild(kwRow);
+    }
+    if (r1.signal_note) {
+      var sn = document.createElement('p');
+      sn.style.cssText = 'font-size:12px;color:var(--ink-soft);margin:6px 0 0;';
+      sn.textContent = '信号强度：' + (r1.signal_strength || '—') + ' · ' + r1.signal_note;
+      s1.appendChild(sn);
+    }
+    rb.appendChild(s1);
+
+    // 需求预测
+    if (r2) {
+      var s2 = document.createElement('div');
+      s2.className = 'result-section';
+      s2.innerHTML = '<div class="result-label">② 未来需求预测</div>';
+      var sl = document.createElement('div');
+      sl.className = 'score-line';
+      var sn2 = document.createElement('span');
+      sn2.className = 'score-num';
+      sn2.textContent = r2.growth_score || '—';
+      var st = document.createElement('span');
+      st.className = 'score-label-text';
+      st.textContent = (r2.demand_direction || '') + '  ' + (r2.growth_horizon || '');
+      sl.appendChild(sn2); sl.appendChild(st);
+      s2.appendChild(sl);
+      var bt = document.createElement('div');
+      bt.className = 'bar-track';
+      var bf = document.createElement('div');
+      bf.className = 'bar-fill';
+      bt.appendChild(bf); s2.appendChild(bt);
+      rb.appendChild(s2);
+      requestAnimationFrame(function () { bf.style.width = (r2.growth_score || 0) + '%'; });
+
+      // 假设
+      if (r2.hypothesis) {
+        var s3 = document.createElement('div');
+        s3.className = 'result-section';
+        s3.innerHTML = '<div class="result-label">③ 科研假设生成</div>';
+        var hbox = document.createElement('div');
+        hbox.className = 'hypo-box';
+        hbox.innerHTML = '<p class="hypo-title">' + (r2.hypothesis.title || '') + '</p>'
+          + '<p class="hypo-body">' + (r2.hypothesis.mechanism || '') + '</p>'
+          + '<p class="hypo-pred">验证预测：' + (r2.hypothesis.testable_prediction || '—') + '</p>';
+        s3.appendChild(hbox);
+        rb.appendChild(s3);
+      }
+
+      // 验证学习
+      if (r2.validation_plan) {
+        var vp = r2.validation_plan;
+        var s4 = document.createElement('div');
+        s4.className = 'result-section';
+        s4.innerHTML = '<div class="result-label">④ 验证学习</div>';
+        var fScore = Math.max(0, Math.min(100, parseInt(vp.feasibility_score, 10) || 0));
+        var riskLabel = { '低': '专利风险低', '中': '专利风险中', '高': '专利风险高' };
+        var meta = document.createElement('p');
+        meta.style.cssText = 'font-size:12px;color:var(--ink-soft);margin:0 0 6px;';
+        meta.textContent = '落地可行性 ' + fScore + ' / 100　·　' + (riskLabel[vp.patent_risk] || '专利风险—');
+        s4.appendChild(meta);
+        if (vp.next_steps && vp.next_steps.length) {
+          var ul = document.createElement('ul');
+          ul.className = 'steps-list';
+          vp.next_steps.forEach(function (s) {
+            var li = document.createElement('li');
+            li.textContent = s;
+            ul.appendChild(li);
+          });
+          s4.appendChild(ul);
+        }
+        if (vp.reinject) {
+          var rn = document.createElement('p');
+          rn.className = 'reinject-note';
+          rn.textContent = '↻ 知识回流：' + vp.reinject;
+          s4.appendChild(rn);
+        }
+        rb.appendChild(s4);
+      }
+    }
+  }
+
+  function runSingle(idx) {
+    var test = TESTS[idx];
+    var cardEl = cards[idx];
+    cardEl.dataset.status = 'running';
+    cardEl.className = 'test-card expanded running';
+    cardEl.querySelector('.test-status').textContent = '运行中…';
+    cardEl.querySelector('.test-status').className = 'test-status running';
+    cardEl.querySelector('.result-block').innerHTML = '<p style="font-size:13px;color:var(--ink-soft);">正在调用灵感雷达…</p>';
+
+    return callClaude(buildPrompt1(test.signal))
+      .then(function (r1) {
+        return callClaude(buildPrompt2(test.signal)).then(function (r2) { return { r1: r1, r2: r2 }; });
+      })
+      .then(function (res) {
+        renderResult(cardEl, res.r1, res.r2);
+        cardEl.dataset.status = 'done';
+        cardEl.className = 'test-card expanded done';
+        cardEl.querySelector('.test-status').textContent = '完成 ✓';
+        cardEl.querySelector('.test-status').className = 'test-status done';
+      })
+      .catch(function (err) {
+        cardEl.dataset.status = 'error';
+        cardEl.className = 'test-card expanded error';
+        cardEl.querySelector('.test-status').textContent = '出错';
+        cardEl.querySelector('.test-status').className = 'test-status error';
+        cardEl.querySelector('.result-block').innerHTML = '<p class="error-msg">⚠ ' + err.message + '</p>';
+      });
+  }
+
+  function resetAll() {
+    cards.forEach(function (c, i) {
+      c.dataset.status = 'idle';
+      c.className = 'test-card';
+      c.querySelector('.test-status').textContent = '待运行';
+      c.querySelector('.test-status').className = 'test-status';
+      c.querySelector('.result-block').innerHTML = '';
+    });
+    progressText.textContent = '';
+    runAllBtn.disabled = false;
+    running = false;
+  }
+
+  // 构建卡片
+  TESTS.forEach(function (test, i) {
+    var card = document.createElement('div');
+    card.className = 'test-card';
+    card.dataset.status = 'idle';
+
+    var header = document.createElement('div');
+    header.className = 'test-header';
+    header.innerHTML = '<span class="test-num">' + test.id + '</span>'
+      + '<div class="test-title-block"><div class="test-name">' + test.name + '</div>'
+      + '<div class="test-type-badge">' + test.type + '</div></div>'
+      + '<span class="test-status">待运行</span>'
+      + '<span class="chevron">▼</span>';
+
+    var body = document.createElement('div');
+    body.className = 'test-body';
+    body.innerHTML = '<p class="signal-preview">' + test.signal + '</p>';
+    var runBtn = document.createElement('button');
+    runBtn.className = 'run-single-btn';
+    runBtn.type = 'button';
+    runBtn.textContent = '单独运行';
+    body.appendChild(runBtn);
+    var rb = document.createElement('div');
+    rb.className = 'result-block';
+    body.appendChild(rb);
+
+    header.addEventListener('click', function () {
+      card.classList.toggle('expanded');
+    });
+
+    runBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (card.dataset.status === 'running' || running) return;
+      runBtn.disabled = true;
+      runSingle(i).finally(function () { runBtn.disabled = false; });
+    });
+
+    card.appendChild(header);
+    card.appendChild(body);
+    grid.appendChild(card);
+    cards.push(card);
+  });
+
+  runAllBtn.addEventListener('click', function () {
+    if (running) return;
+    running = true;
+    runAllBtn.disabled = true;
+    resetBtn.disabled = true;
+    var chain = Promise.resolve();
+    TESTS.forEach(function (_, i) {
+      chain = chain.then(function () {
+        progressText.textContent = '进度：' + (i + 1) + ' / ' + TESTS.length;
+        return runSingle(i);
+      });
+    });
+    chain.finally(function () {
+      running = false;
+      runAllBtn.disabled = false;
+      resetBtn.disabled = false;
+      progressText.textContent = '全部完成 ✓';
+    });
+  });
+
+  resetBtn.addEventListener('click', function () {
+    if (running) return;
+    resetAll();
+  });
+})();
+</script>
+</body>
+</html>

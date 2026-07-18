@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>灵感雷达 · 互动 Demo · 珀莱雅美妆科研实验室 AI 发现层</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  @media (prefers-reduced-motion: reduce) { * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
+  * { box-sizing: border-box; }
+  :root {
+    --bg: #F2F4EE; --paper: #FBFCF9; --ink: #16231D; --ink-soft: #59685D;
+    --signal: #2F7A63; --signal-soft: #E1EEE7; --risk: #B5652E; --risk-soft: #F6E7D9;
+    --line: #DCE2D5; --radius: 16px;
+    --font: 'IBM Plex Sans', sans-serif; --mono: 'IBM Plex Mono', monospace;
+  }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); font-family: var(--font); -webkit-font-smoothing: antialiased; }
+  .page { max-width: 720px; margin: 0 auto; padding: 40px 24px 72px; }
+  .back-link { font-family: var(--mono); font-size: 12px; color: var(--signal); text-decoration: none; display: inline-block; margin-bottom: 28px; }
+  .back-link:hover { text-decoration: underline; }
+  .eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; color: var(--signal); text-transform: uppercase; margin-bottom: 14px; }
+  h1 { font-weight: 700; font-size: clamp(32px, 6vw, 46px); letter-spacing: -0.02em; margin: 0 0 14px; line-height: 1.05; }
+  .tagline { font-size: 15px; line-height: 1.65; color: var(--ink-soft); max-width: 46ch; margin: 0 0 32px; }
+
+  .input-card { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; margin-bottom: 24px; }
+  .input-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; color: var(--ink-soft); text-transform: uppercase; margin-bottom: 14px; display: block; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .chip {
+    font-size: 13px; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--line);
+    background: var(--bg); color: var(--ink-soft); cursor: pointer; transition: all 0.15s;
+  }
+  .chip:hover { border-color: var(--signal); color: var(--signal); }
+  .chip.active { background: var(--signal-soft); border-color: var(--signal); color: var(--signal); font-weight: 500; }
+  textarea {
+    width: 100%; min-height: 110px; font-family: var(--font); font-size: 14px; line-height: 1.6;
+    color: var(--ink); border: 1px solid var(--line); border-radius: 10px; padding: 14px;
+    resize: vertical; margin-bottom: 16px; background: #fff; transition: border-color 0.15s;
+  }
+  textarea:focus { outline: none; border-color: var(--signal); }
+  .run-btn {
+    font-weight: 600; font-size: 14px; padding: 11px 26px; border-radius: 999px;
+    border: none; background: var(--ink); color: var(--paper); cursor: pointer; transition: all 0.15s;
+  }
+  .run-btn:hover:not(:disabled) { background: var(--signal); }
+  .run-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  .radar-zone { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 24px 0 28px; }
+  .radar-svg { width: 110px; height: 110px; }
+  .radar-ring { fill: none; stroke: var(--line); stroke-width: 1; }
+  .radar-axis { stroke: var(--line); stroke-width: 1; }
+  .radar-center { fill: var(--signal); }
+  .radar-sweep-group { transform-origin: 100px 100px; animation: radar-spin 2s linear infinite; }
+  .radar-svg.done .radar-sweep-group { animation: none; opacity: 0; transition: opacity 0.4s; }
+  .radar-sweep { fill: var(--signal); fill-opacity: 0.25; }
+  @keyframes radar-spin { to { transform: rotate(360deg); } }
+  .radar-status { font-family: var(--mono); font-size: 12px; color: var(--ink-soft); }
+
+  .pipeline { display: flex; flex-direction: column; gap: 14px; }
+  .stage {
+    background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 20px; opacity: 0.45; transition: opacity 0.3s, border-color 0.3s;
+    display: flex; gap: 16px; align-items: flex-start;
+  }
+  .stage.active { opacity: 1; border-color: var(--signal); }
+  .stage-marker {
+    flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%; background: var(--bg);
+    border: 1px solid var(--line); display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-weight: 600; font-size: 13px; color: var(--ink-soft);
+  }
+  .stage.active .stage-marker { background: var(--signal); border-color: var(--signal); color: #fff; }
+  .stage-body { flex: 1; min-width: 0; }
+  .stage-body h3 { font-size: 14px; font-weight: 600; margin: 0 0 10px; }
+  .placeholder { color: var(--ink-soft); font-size: 13px; margin: 0; opacity: 0.6; }
+
+  /* Stage 1 弱信号 */
+  .signal-source-badge { font-family: var(--mono); font-size: 11px; padding: 3px 10px; border-radius: 999px; background: var(--signal-soft); color: var(--signal); display: inline-block; margin-bottom: 8px; }
+  .signal-keywords { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .kw-tag { font-size: 12px; padding: 3px 10px; border-radius: 999px; background: var(--bg); border: 1px solid var(--line); color: var(--ink); }
+
+  /* Stage 2 需求预测 */
+  .trend-row { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+  .trend-score { font-family: var(--mono); font-size: 26px; font-weight: 600; color: var(--signal); min-width: 48px; }
+  .trend-info { flex: 1; }
+  .trend-name { font-weight: 600; font-size: 14px; margin-bottom: 3px; }
+  .trend-horizon { font-family: var(--mono); font-size: 11px; color: var(--ink-soft); }
+  .bar-track { height: 5px; background: var(--bg); border-radius: 999px; overflow: hidden; margin-top: 8px; }
+  .bar-fill { height: 100%; background: var(--signal); border-radius: 999px; width: 0%; transition: width 0.8s ease; }
+
+  /* Stage 3 假设生成 */
+  .hypo-card { border-left: 3px solid var(--signal); padding-left: 16px; }
+  .hypo-title { font-size: 16px; font-weight: 700; margin: 0 0 8px; }
+  .hypo-body { font-size: 13px; line-height: 1.6; color: var(--ink); margin: 0 0 8px; }
+  .hypo-evidence { font-size: 12px; color: var(--ink-soft); font-style: italic; margin: 0; }
+  .hypo-meta { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .hypo-meta-tag { font-family: var(--mono); font-size: 11px; padding: 3px 10px; border-radius: 999px; background: var(--bg); border: 1px solid var(--line); color: var(--ink-soft); }
+
+  /* Stage 4 验证学习 */
+  .val-row { margin-bottom: 10px; }
+  .val-label-row { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
+  .val-value { font-family: var(--mono); font-weight: 600; }
+  .cred-badge { font-family: var(--mono); font-size: 11px; padding: 3px 10px; border-radius: 999px; }
+  .cred-badge.high { background: var(--signal-soft); color: var(--signal); }
+  .cred-badge.mid, .cred-badge.low { background: var(--risk-soft); color: var(--risk); }
+  .next-steps { margin-top: 12px; font-size: 13px; color: var(--ink-soft); }
+  .next-steps ul { margin: 6px 0 0; padding-left: 18px; line-height: 1.7; }
+
+  .note { margin-top: 32px; font-size: 12px; line-height: 1.7; color: var(--ink-soft); border-top: 1px solid var(--line); padding-top: 16px; }
+
+  @media (max-width: 480px) { .page { padding: 28px 16px 56px; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <a href="index.html" class="back-link">← 返回首页</a>
+  <div class="eyebrow">珀莱雅美妆科研实验室 · AI 发现层 · 互动 Demo</div>
+  <h1>灵感雷达</h1>
+  <p class="tagline">输入一条原始信号，灵感雷达将逐层分析并生成可验证的科研假设。</p>
+
+  <section class="input-card">
+    <label class="input-label" for="signal-input">选择信号类型或直接输入原始信号</label>
+    <div class="chips" id="chips"></div>
+    <textarea id="signal-input" placeholder="在此粘贴或输入原始信号内容……" aria-label="原始信号内容"></textarea>
+    <button class="run-btn" id="run-btn" type="button">运行灵感雷达</button>
+  </section>
+
+  <section class="radar-zone" id="radar-zone" hidden>
+    <svg class="radar-svg" id="radar-svg" viewBox="0 0 200 200" aria-hidden="true">
+      <circle cx="100" cy="100" r="90" class="radar-ring"/>
+      <circle cx="100" cy="100" r="60" class="radar-ring"/>
+      <circle cx="100" cy="100" r="30" class="radar-ring"/>
+      <line x1="100" y1="10" x2="100" y2="190" class="radar-axis"/>
+      <line x1="10" y1="100" x2="190" y2="100" class="radar-axis"/>
+      <g class="radar-sweep-group">
+        <path d="M100,100 L100,10 A90,90 0 0,1 156,29 Z" class="radar-sweep"/>
+      </g>
+      <circle cx="100" cy="100" r="3" class="radar-center"/>
+    </svg>
+    <div class="radar-status" id="radar-status" aria-live="polite">待运行</div>
+  </section>
+
+  <section class="pipeline" id="pipeline">
+    <div class="stage" id="stage-1">
+      <div class="stage-marker">①</div>
+      <div class="stage-body">
+        <h3>弱信号识别</h3>
+        <div id="content-1"><p class="placeholder">等待运行…</p></div>
+      </div>
+    </div>
+    <div class="stage" id="stage-2">
+      <div class="stage-marker">②</div>
+      <div class="stage-body">
+        <h3>未来需求预测</h3>
+        <div id="content-2"><p class="placeholder">等待运行…</p></div>
+      </div>
+    </div>
+    <div class="stage" id="stage-3">
+      <div class="stage-marker">③</div>
+      <div class="stage-body">
+        <h3>科研假设生成</h3>
+        <div id="content-3"><p class="placeholder">等待运行…</p></div>
+      </div>
+    </div>
+    <div class="stage" id="stage-4">
+      <div class="stage-marker">④</div>
+      <div class="stage-body">
+        <h3>验证学习（闭环回流）</h3>
+        <div id="content-4"><p class="placeholder">等待运行…</p></div>
+      </div>
+    </div>
+  </section>
+
+  <p class="note">
+    Demo 调用 Claude API 实时分析。每次运行约消耗 2 次 API 调用。<br>
+    如需批量测试预置信号，请前往 <a href="tests.html" style="color:var(--signal);text-decoration:none;">测试套件 →</a>
+  </p>
+</div>
+<script>
+(function () {
+  var EXAMPLES = [
+    {
+      label: '小红书用户帖',
+      text: '用了三个月的壬二酸精华，痘印淡了但是皮肤开始有点干，感觉壬二酸是不是需要和什么东西搭配才行？最近看到有博主说玻色因可以一起用，不知道靠不靠谱……'
+    },
+    {
+      label: '学术文献摘要',
+      text: 'Recent studies suggest that the skin microbiome plays a critical role in regulating sebum production and barrier function. Dysbiosis of Cutibacterium acnes strains has been correlated with increased inflammatory cytokine release (IL-1β, TNF-α), suggesting a potential therapeutic window for probiotic-derived postbiotics targeting the skin-gut-brain axis.'
+    },
+    {
+      label: '专利摘要',
+      text: '本发明公开了一种含有β-葡聚糖与神经酰胺前体的复合修护组合物，通过激活皮肤Toll样受体2（TLR2）信号通路，促进角质层脂质合成，显著改善敏感性皮肤屏障损伤。'
+    },
+    {
+      label: '客服反馈',
+      text: '顾客反映：最近入夏后用了某款精华感觉脸上有灼热感，不是过敏，就是热，问是不是成分浓度太高了，问有没有适合夏天用的版本？这类反馈本月已收到37条，集中在华南、华东地区。'
+    },
+    {
+      label: '海外社区',
+      text: 'Reddit r/SkincareAddiction: multiple users reporting success with bakuchiol layered under ceramide-based moisturizers for sensitive skin. Many say they tolerate it better than retinol. Trend increasing in EU/AU markets. Several derms on TikTok also pushing bakuchiol as "retinol alternative without the peeling."'
+    }
+  ];
+
+  var chips = document.getElementById('chips');
+  var textarea = document.getElementById('signal-input');
+  var runBtn = document.getElementById('run-btn');
+  var radarZone = document.getElementById('radar-zone');
+  var radarSvg = document.getElementById('radar-svg');
+  var radarStatus = document.getElementById('radar-status');
+  var activeChip = null;
+
+  EXAMPLES.forEach(function (ex, i) {
+    var btn = document.createElement('button');
+    btn.className = 'chip';
+    btn.type = 'button';
+    btn.textContent = ex.label;
+    btn.addEventListener('click', function () {
+      if (activeChip) activeChip.classList.remove('active');
+      btn.classList.add('active');
+      activeChip = btn;
+      textarea.value = ex.text;
+    });
+    chips.appendChild(btn);
+  });
+
+  function setActive(n) { document.getElementById('stage-' + n).classList.add('active'); }
+  function setStatus(t) { radarStatus.textContent = t; }
+
+  function reset() {
+    [1, 2, 3, 4].forEach(function (n) {
+      document.getElementById('stage-' + n).classList.remove('active');
+      document.getElementById('content-' + n).innerHTML = '<p class="placeholder">等待运行…</p>';
+    });
+  }
+
+  function callClaude(prompt) {
+    return fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6', max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    }).then(function (r) {
+      if (!r.ok) throw new Error('API 错误 ' + r.status);
+      return r.json();
+    }).then(function (d) {
+      var text = (d.content || []).map(function (b) { return b.text || ''; }).join('');
+      var clean = text.replace(/```json[\s\S]*?```/g, function(m) { return m.slice(7, -3); }).replace(/```/g, '').trim();
+      try { return JSON.parse(clean); }
+      catch(e) {
+        var m = clean.match(/\{[\s\S]*\}/);
+        if (m) return JSON.parse(m[0]);
+        throw new Error('JSON 解析失败');
+      }
+    });
+  }
+
+  function buildPrompt1(input) {
+    return '你是珀莱雅美妆科研实验室的 AI 分析助手。以下是一条来自市场的原始信号：\n\n' + input + '\n\n请以 JSON 格式输出：\n{\n  "source_type": "信号来源类型（小红书/学术文献/专利/客服反馈/海外社区/其他）",\n  "core_concern": "核心护肤诉求（一句话）",\n  "keywords": ["关键词1","关键词2","关键词3"],\n  "signal_strength": "强/中/弱（基于信号的广泛性与可信度）",\n  "signal_note": "一句话补充说明"\n}\n只输出 JSON，不要其他文字。';
+  }
+
+  function buildPrompt2(input) {
+    return '你是珀莱雅美妆科研实验室的 AI 分析助手。以下是一条原始信号：\n\n' + input + '\n\n请完成四步分析，以 JSON 输出：\n{\n  "demand_direction": "预测的主要需求方向（一句话）",\n  "growth_score": 75,\n  "growth_horizon": "预计在 X-X 年内增长",\n  "hypothesis": {\n    "title": "科研假设标题",\n    "mechanism": "皮肤学机理说明（1-2句）",\n    "testable_prediction": "可验证的预测（1句）",\n    "evidence_basis": "基于上述信号的支撑说明"\n  },\n  "validation_plan": {\n    "feasibility_score": 70,\n    "patent_risk": "低/中/高",\n    "next_steps": ["建议步骤1","建议步骤2","建议步骤3"],\n    "reinject": "本次分析如何优化后续信号采集"\n  }\n}\n只输出 JSON，不要其他文字。';
+  }
+
+  function renderStage1(r) {
+    var el = document.getElementById('content-1');
+    el.innerHTML = '';
+    var badge = document.createElement('span');
+    badge.className = 'signal-source-badge';
+    badge.textContent = r.source_type || '未知来源';
+    el.appendChild(badge);
+    var concern = document.createElement('p');
+    concern.style.cssText = 'font-size:14px;margin:8px 0 4px;font-weight:600;';
+    concern.textContent = r.core_concern || '';
+    el.appendChild(concern);
+    if (r.signal_note) {
+      var note = document.createElement('p');
+      note.style.cssText = 'font-size:13px;color:var(--ink-soft);margin:0 0 8px;';
+      note.textContent = r.signal_note;
+      el.appendChild(note);
+    }
+    if (r.keywords && r.keywords.length) {
+      var row = document.createElement('div');
+      row.className = 'signal-keywords';
+      r.keywords.forEach(function (kw) {
+        var tag = document.createElement('span');
+        tag.className = 'kw-tag';
+        tag.textContent = kw;
+        row.appendChild(tag);
+      });
+      el.appendChild(row);
+    }
+    setActive(1);
+  }
+
+  function renderStage2(r) {
+    var el = document.getElementById('content-2');
+    el.innerHTML = '';
+    var score = Math.max(0, Math.min(100, parseInt(r.growth_score, 10) || 0));
+    var row = document.createElement('div');
+    row.className = 'trend-row';
+    var scoreEl = document.createElement('div');
+    scoreEl.className = 'trend-score';
+    scoreEl.textContent = score;
+    var info = document.createElement('div');
+    info.className = 'trend-info';
+    var name = document.createElement('div');
+    name.className = 'trend-name';
+    name.textContent = r.demand_direction || '';
+    var horizon = document.createElement('div');
+    horizon.className = 'trend-horizon';
+    horizon.textContent = r.growth_horizon || '';
+    info.appendChild(name); info.appendChild(horizon);
+    row.appendChild(scoreEl); row.appendChild(info);
+    el.appendChild(row);
+    var track = document.createElement('div');
+    track.className = 'bar-track';
+    var fill = document.createElement('div');
+    fill.className = 'bar-fill';
+    track.appendChild(fill);
+    el.appendChild(track);
+    requestAnimationFrame(function () { fill.style.width = score + '%'; });
+    setActive(2);
+  }
+
+  function renderStage3(hypo) {
+    var el = document.getElementById('content-3');
+    el.innerHTML = '';
+    if (!hypo || !hypo.title) { el.innerHTML = '<p class="placeholder">未生成假设</p>'; setActive(3); return; }
+    var card = document.createElement('div');
+    card.className = 'hypo-card';
+    var title = document.createElement('p');
+    title.className = 'hypo-title';
+    title.textContent = hypo.title;
+    var mech = document.createElement('p');
+    mech.className = 'hypo-body';
+    mech.textContent = hypo.mechanism || '';
+    var pred = document.createElement('p');
+    pred.className = 'hypo-evidence';
+    pred.textContent = '可验证预测：' + (hypo.testable_prediction || '—');
+    card.appendChild(title); card.appendChild(mech); card.appendChild(pred);
+    if (hypo.evidence_basis) {
+      var meta = document.createElement('div');
+      meta.className = 'hypo-meta';
+      var tag = document.createElement('span');
+      tag.className = 'hypo-meta-tag';
+      tag.textContent = '依据：' + hypo.evidence_basis;
+      meta.appendChild(tag);
+      card.appendChild(meta);
+    }
+    el.appendChild(card);
+    setActive(3);
+  }
+
+  function renderStage4(plan) {
+    var el = document.getElementById('content-4');
+    el.innerHTML = '';
+    if (!plan) { el.innerHTML = '<p class="placeholder">未生成验证计划</p>'; setActive(4); return; }
+
+    var riskMap = { '低': 'high', '中': 'mid', '高': 'low' };
+    var score = Math.max(0, Math.min(100, parseInt(plan.feasibility_score, 10) || 0));
+
+    var valRow = document.createElement('div');
+    valRow.className = 'val-row';
+    var labelRow = document.createElement('div');
+    labelRow.className = 'val-label-row';
+    var labelEl = document.createElement('span');
+    labelEl.textContent = '落地可行性';
+    var valEl = document.createElement('span');
+    valEl.className = 'val-value';
+    valEl.textContent = score;
+    labelRow.appendChild(labelEl); labelRow.appendChild(valEl);
+    var track = document.createElement('div');
+    track.className = 'bar-track';
+    var fill = document.createElement('div');
+    fill.className = 'bar-fill';
+    track.appendChild(fill);
+    valRow.appendChild(labelRow); valRow.appendChild(track);
+    el.appendChild(valRow);
+    requestAnimationFrame(function () { fill.style.width = score + '%'; });
+
+    if (plan.patent_risk) {
+      var rRow = document.createElement('div');
+      rRow.style.cssText = 'margin-top:10px;font-size:13px;display:flex;align-items:center;gap:10px;';
+      var rLabel = document.createElement('span');
+      rLabel.style.color = 'var(--ink-soft)';
+      rLabel.textContent = '专利风险';
+      var badge = document.createElement('span');
+      badge.className = 'cred-badge ' + (riskMap[plan.patent_risk] || 'mid');
+      badge.textContent = plan.patent_risk;
+      rRow.appendChild(rLabel); rRow.appendChild(badge);
+      el.appendChild(rRow);
+    }
+
+    if (plan.next_steps && plan.next_steps.length) {
+      var ns = document.createElement('div');
+      ns.className = 'next-steps';
+      var nsLabel = document.createElement('div');
+      nsLabel.style.cssText = 'font-weight:600;font-size:13px;margin-bottom:4px;';
+      nsLabel.textContent = '建议验证步骤';
+      var ul = document.createElement('ul');
+      plan.next_steps.forEach(function (s) {
+        var li = document.createElement('li');
+        li.textContent = s;
+        ul.appendChild(li);
+      });
+      ns.appendChild(nsLabel); ns.appendChild(ul);
+      el.appendChild(ns);
+    }
+
+    if (plan.reinject) {
+      var re = document.createElement('p');
+      re.style.cssText = 'font-size:12px;color:var(--signal);margin-top:10px;padding:8px 12px;background:var(--signal-soft);border-radius:8px;';
+      re.textContent = '↻ 知识回流：' + plan.reinject;
+      el.appendChild(re);
+    }
+    setActive(4);
+  }
+
+  runBtn.addEventListener('click', function () {
+    var input = textarea.value.trim();
+    if (!input) { textarea.focus(); return; }
+    reset();
+    runBtn.disabled = true;
+    runBtn.textContent = '分析中…';
+    radarZone.hidden = false;
+    radarSvg.classList.remove('done');
+    setStatus('正在识别弱信号…');
+
+    callClaude(buildPrompt1(input))
+      .then(function (r1) {
+        renderStage1(r1);
+        setStatus('正在预测需求趋势并生成假设…');
+        return callClaude(buildPrompt2(input));
+      })
+      .then(function (r2) {
+        renderStage2(r2);
+        renderStage3(r2.hypothesis || {});
+        renderStage4(r2.validation_plan || {});
+        radarSvg.classList.add('done');
+        setStatus('分析完成 ✓');
+      })
+      .catch(function (err) {
+        setStatus('出错：' + err.message);
+      })
+      .finally(function () {
+        runBtn.disabled = false;
+        runBtn.textContent = '运行灵感雷达';
+      });
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>灵感雷达 · 方案总览 · 珀莱雅美妆科研实验室 AI 发现层</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  :root {
+    --bg: #F2F4EE;
+    --paper: #FBFCF9;
+    --ink: #16231D;
+    --ink-soft: #59685D;
+    --signal: #2F7A63;
+    --signal-soft: #E1EEE7;
+    --line: #DCE2D5;
+    --radius: 16px;
+    --font-display: 'IBM Plex Sans', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+  }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-display);
+    -webkit-font-smoothing: antialiased;
+  }
+  .page { max-width: 720px; margin: 0 auto; padding: 48px 24px 72px; }
+  .hero { margin-bottom: 40px; }
+  .eyebrow {
+    font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em;
+    color: var(--signal); text-transform: uppercase; margin-bottom: 14px;
+  }
+  h1 {
+    font-weight: 700; font-size: clamp(34px, 7vw, 50px);
+    letter-spacing: -0.02em; margin: 0 0 16px; line-height: 1.05;
+  }
+  .tagline { font-size: 16px; line-height: 1.65; color: var(--ink-soft); max-width: 46ch; margin: 0; }
+
+  .overview-eyebrow {
+    font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.05em;
+    color: var(--ink-soft); text-transform: uppercase; margin-bottom: 16px;
+  }
+  .flow { display: flex; flex-direction: column; align-items: stretch; }
+  .flow-node {
+    display: flex; align-items: flex-start; gap: 14px;
+    background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 16px 18px;
+  }
+  .flow-node-existing { background: var(--signal-soft); border-color: var(--signal); }
+  .flow-marker {
+    flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%;
+    background: var(--bg); border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-mono); font-weight: 600; font-size: 13px; color: var(--ink-soft);
+  }
+  .flow-node-existing .flow-marker { background: var(--signal); border-color: var(--signal); color: #fff; }
+  .flow-text { flex: 1; }
+  .flow-label { font-weight: 600; font-size: 14px; margin-bottom: 3px; }
+  .flow-desc { font-size: 13px; color: var(--ink-soft); line-height: 1.55; }
+  .flow-arrow { text-align: center; font-family: var(--font-mono); color: var(--line); font-size: 16px; padding: 3px 0; }
+  .flow-arrow-final { color: var(--signal); font-size: 11px; letter-spacing: 0.03em; padding: 6px 0; }
+
+  .flow-loop {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    border: 1px dashed var(--signal); border-radius: 999px;
+    padding: 10px 20px; margin-top: 14px;
+    font-size: 12px; color: var(--signal); text-align: center;
+  }
+  .loop-icon { font-size: 16px; line-height: 1; }
+
+  .note { margin-top: 32px; font-size: 12px; line-height: 1.7; color: var(--ink-soft); border-top: 1px solid var(--line); padding-top: 16px; }
+
+  @media (max-width: 480px) {
+    .page { padding: 32px 16px 56px; }
+    .flow-loop { flex-direction: column; gap: 4px; text-align: center; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="hero">
+    <div class="eyebrow">珀莱雅美妆科研实验室 · AI 发现层 · 方案总览</div>
+    <h1>灵感雷达</h1>
+    <p class="tagline">在"智能配方系统"生成配方之前，先回答一个更根本的问题——下一款功效成分，该往哪个方向想。</p>
+  </header>
+
+  <section class="overview">
+    <div class="overview-eyebrow">灵感雷达如何嵌入珀莱雅现有研发链路</div>
+    <div class="flow">
+      <div class="flow-node">
+        <div class="flow-marker">①</div>
+        <div class="flow-text">
+          <div class="flow-label">弱信号识别</div>
+          <div class="flow-desc">整合社交媒体、电商评论、客服反馈、国际论文、专利及海外社区等数据，识别尚未形成热点但持续增长的需求</div>
+        </div>
+      </div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-node">
+        <div class="flow-marker">②</div>
+        <div class="flow-text">
+          <div class="flow-label">未来需求预测</div>
+          <div class="flow-desc">预测未来1—2年具有增长潜力的护肤需求方向</div>
+        </div>
+      </div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-node">
+        <div class="flow-marker">③</div>
+        <div class="flow-text">
+          <div class="flow-label">科研假设生成</div>
+          <div class="flow-desc">结合皮肤机理、企业知识库及科研文献，形成多个可验证的科研假设，并与智能配方系统衔接</div>
+        </div>
+      </div>
+      <div class="flow-arrow flow-arrow-final">↓ 与现有工具衔接</div>
+      <div class="flow-node flow-node-existing">
+        <div class="flow-marker">✓</div>
+        <div class="flow-text">
+          <div class="flow-label">智能配方系统（智能配方师 + 斑贴试验AI机器人）</div>
+          <div class="flow-desc">珀莱雅现有AI工具，负责在③给出的假设方向上生成配方并完成实验验证</div>
+        </div>
+      </div>
+      <div class="flow-arrow">↓ 实验结果 + 市场反馈</div>
+      <div class="flow-node">
+        <div class="flow-marker">④</div>
+        <div class="flow-text">
+          <div class="flow-label">验证学习</div>
+          <div class="flow-desc">结合实验结果和市场反馈持续优化模型，实现研发知识沉淀</div>
+        </div>
+      </div>
+      <div class="flow-loop">
+        <span class="loop-icon">↻</span>
+        <span class="loop-text">沉淀的知识反馈回流至①-③，形成持续学习闭环，而非一次性产出</span>
+      </div>
+    </div>
+  </section>
+
+  <footer class="note">
+    这是"灵感雷达"的静态架构总览（四模块版：弱信号识别 → 未来需求预测 → 科研假设生成 → 验证学习）。配套还有一份可交互 Mini Demo，两份材料建议一起提交。
+  </footer>
+
+</div>
+</body>
+</html>
