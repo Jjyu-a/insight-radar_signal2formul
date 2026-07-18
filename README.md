@@ -77,17 +77,4 @@ python3 -m http.server 8080
 
 ---
 
-## 部署到 GitHub Pages
-
-```bash
-git init
-git add .
-git commit -m "init: 灵感雷达 v1.0"
-git remote add origin https://github.com/yourusername/linggan-radar.git
-git push -u origin main
-# 然后在 GitHub 仓库 Settings → Pages → Source 选 main 分支即可
-```
-
----
-
 *2026 AI 先锋未来人才大赛 · 珀莱雅命题*
